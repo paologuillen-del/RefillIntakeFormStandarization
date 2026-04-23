@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Refill Intake Form | OpenLoop Health</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #1a6fb5;
+    --blue-dark: #145a96;
+    --blue-light: #e8f2fb;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --amber: #d97706;
+    --amber-light: #fffbeb;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--gray-100);
+    color: var(--gray-900);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: var(--blue);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark svg { width: 22px; height: 22px; fill: #fff; }
+  .logo-text { font-size: 17px; font-weight: 700; color: var(--gray-900); letter-spacing: -.3px; }
+  .logo-text span { color: var(--blue); }
+
+  /* ── Progress bar ── */
+  .progress-wrap {
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 10px 24px 14px;
+    position: sticky;
+    top: 69px;
+    z-index: 99;
+  }
+  .progress-label {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .progress-bar-bg {
+    height: 5px;
+    background: var(--gray-200);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 99px;
+    transition: width .35s ease;
+  }
+
+  /* ── Layout ── */
+  .form-outer {
+    max-width: 680px;
+    margin: 32px auto 0;
+    padding: 0 16px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px 36px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 520px) { .card { padding: 22px 18px; } }
+
+  /* ── Step ── */
+  .step { display: none; }
+  .step.active { display: block; }
+
+  .step-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: var(--blue-light);
+    border-radius: 99px;
+    padding: 3px 10px;
+    margin-bottom: 12px;
+  }
+  .step-title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--gray-900);
+    margin-bottom: 6px;
+  }
+  .step-subtitle {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  /* ── Options ── */
+  .options-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .opt-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    user-select: none;
+  }
+  .opt-item:hover { border-color: var(--blue); background: var(--blue-light); }
+  .opt-item.selected { border-color: var(--blue); background: var(--blue-light); }
+  .opt-item.selected .opt-check { background: var(--blue); border-color: var(--blue); }
+  .opt-item.selected .opt-check::after { opacity: 1; }
+
+  .opt-check {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    border: 2px solid var(--gray-400);
+    border-radius: 4px;
+    margin-top: 1px;
+    position: relative;
+    transition: all .15s;
+  }
+  .opt-check::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/10px no-repeat;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+
+  .opt-item.radio .opt-check { border-radius: 50%; }
+  .opt-item.radio.selected .opt-check::after { background: none; }
+  .opt-item.radio.selected .opt-check::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px; height: 8px;
+    background: #fff;
+    border-radius: 50%;
+  }
+
+  .opt-label { font-size: 14px; color: var(--gray-700); line-height: 1.45; flex: 1; }
+  .opt-note { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+
+  /* ── Text inputs ── */
+  .field-label { font-size: 14px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; display: block; }
+
+  input[type="text"], input[type="number"], input[type="email"], textarea, select {
+    width: 100%;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--gray-900);
+    outline: none;
+    transition: border-color .15s;
+    background: #fff;
+    font-family: inherit;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus,
+  textarea:focus, select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(26,111,181,.12);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ── Searchable client dropdown ── */
+  .client-field { position: relative; }
+
+  .client-trigger {
+    width: 100%;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 10px 36px 10px 12px;
+    font-size: 15px;
+    color: var(--gray-900);
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    outline: none;
+    transition: border-color .15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: inherit;
+  }
+  .client-trigger:hover, .client-trigger:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,111,181,.12); }
+  .client-trigger.has-value { color: var(--gray-900); }
+  .client-trigger-placeholder { color: var(--gray-400); }
+  .client-trigger-caret {
+    flex-shrink: 0;
+    width: 16px; height: 16px;
+    fill: var(--gray-400);
+    transition: transform .2s;
+  }
+  .client-trigger.open .client-trigger-caret { transform: rotate(180deg); }
+
+  .client-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 1.5px solid var(--blue);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    z-index: 200;
+    overflow: hidden;
+  }
+  .client-dropdown.open { display: block; }
+
+  .client-search-wrap {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky;
+    top: 0;
+    background: #fff;
+  }
+  .client-search {
+    width: 100%;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 7px 10px 7px 30px;
+    font-size: 13px;
+    outline: none;
+    background: var(--gray-50) url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='%239ca3af' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' d='M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z' clip-rule='evenodd'/%3E%3C/svg%3E") 8px center/16px no-repeat;
+    font-family: inherit;
+  }
+  .client-search:focus { border-color: var(--blue); }
+
+  .client-list {
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .client-option {
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .client-option:hover, .client-option.focused { background: var(--blue-light); color: var(--blue); }
+  .client-option.selected { background: var(--blue-light); font-weight: 600; color: var(--blue); }
+  .client-no-results {
+    padding: 14px;
+    font-size: 13px;
+    color: var(--gray-400);
+    text-align: center;
+  }
+
+  /* ── Sub-section ── */
+  .sub-section {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 18px;
+    margin-top: 16px;
+  }
+  .sub-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+
+  /* ── Alert banners ── */
+  .alert {
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 12px;
+    display: none;
+  }
+  .alert.show { display: block; }
+  .alert-red { background: var(--red-light); border: 1px solid #fca5a5; color: #991b1b; }
+  .alert-amber { background: var(--amber-light); border: 1px solid #fcd34d; color: #92400e; }
+  .alert-blue { background: var(--blue-light); border: 1px solid #93c5fd; color: #1e3a5f; }
+  .alert-title { font-weight: 700; margin-bottom: 4px; }
+
+  /* ── Navigation ── */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    gap: 12px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+  }
+  .btn-primary { background: var(--blue); color: #fff; flex: 1; justify-content: center; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-primary:disabled { background: var(--gray-400); cursor: not-allowed; }
+  .btn-outline { background: #fff; color: var(--gray-700); border: 1.5px solid var(--gray-200); }
+  .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* ── Special pages ── */
+  .special-page { display: none; text-align: center; padding: 40px 36px 32px; }
+  .special-page.active { display: block; }
+  .special-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 30px;
+  }
+  .icon-red { background: var(--red-light); }
+  .icon-green { background: var(--green-light); }
+  .special-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+  .special-body { font-size: 15px; color: var(--gray-500); line-height: 1.6; max-width: 440px; margin: 0 auto; }
+
+  /* ── Payload viewer ── */
+  .payload-section {
+    margin-top: 28px;
+    text-align: left;
+  }
+  .payload-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .payload-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--gray-500);
+  }
+  .btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--blue);
+    background: var(--blue-light);
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-copy:hover { background: #d0e8f8; }
+  .btn-copy.copied { color: var(--green); background: var(--green-light); }
+
+  .json-block {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #e2e8f0;
+    max-height: 380px;
+    overflow-y: auto;
+    text-align: left;
+  }
+  .json-key   { color: #93c5fd; }
+  .json-str   { color: #86efac; }
+  .json-num   { color: #fbbf24; }
+  .json-bool  { color: #f472b6; }
+  .json-null  { color: #94a3b8; }
+  .json-punct { color: #94a3b8; }
+
+  .divider { height: 1px; background: var(--gray-200); margin: 20px 0; }
+
+  .required-star { color: var(--red); margin-left: 2px; }
+
+  .conditional-block { display: none; margin-top: 16px; }
+  .conditional-block.show { display: block; }
+
+  .mh-resources { font-size: 13px; line-height: 1.7; }
+  .mh-resources a { color: var(--blue); }
+
+  .input-with-unit { display: flex; gap: 8px; align-items: center; }
+  .input-unit { font-size: 14px; color: var(--gray-500); white-space: nowrap; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+  </div>
+  <span class="logo-text">Open<span>Loop</span> Health</span>
+</header>
+
+<!-- Progress -->
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-label">
+    <span>Follow-Up Intake</span>
+    <span id="progressCount">Step 1 of 16</span>
+  </div>
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:6%"></div></div>
+</div>
+
+<!-- Main form -->
+<div class="form-outer" id="formOuter">
+
+  <!-- ════════════════════════════════════════
+       STEP 0 — Patient Information
+  ════════════════════════════════════════ -->
+  <div class="card step active" id="step-0">
+    <div class="step-badge">Patient Information</div>
+    <div class="step-title">Let's start with some basic information</div>
+    <div class="step-subtitle">Please select your client and provide your patient details to begin.</div>
+
+    <!-- Client name searchable dropdown -->
+    <div style="margin-bottom:20px;">
+      <label class="field-label">Client Name<span class="required-star">*</span></label>
+      <div class="client-field">
+        <button type="button" class="client-trigger" id="clientTrigger" onclick="toggleClientDropdown()" aria-haspopup="listbox" aria-expanded="false">
+          <span id="clientTriggerText" class="client-trigger-placeholder">Select a client…</span>
+          <svg class="client-trigger-caret" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+        <div class="client-dropdown" id="clientDropdown" role="listbox">
+          <div class="client-search-wrap">
+            <input type="text" class="client-search" id="clientSearch"
+              placeholder="Search clients…"
+              oninput="filterClients(this.value)"
+              onkeydown="handleClientKey(event)"
+              autocomplete="off" />
+          </div>
+          <div class="client-list" id="clientList"></div>
+        </div>
+      </div>
+      <!-- Hidden input carries the selected value for easy test access -->
+      <input type="hidden" id="client-name-hidden" />
+    </div>
+
+    <!-- Patient ID + Email -->
+    <div class="field-row">
+      <div>
+        <label class="field-label" for="patient-id">Patient ID<span class="required-star">*</span></label>
+        <input type="text" id="patient-id" placeholder="e.g. P456" autocomplete="off" />
+      </div>
+      <div>
+        <label class="field-label" for="patient-email">Patient Email<span class="required-star">*</span></label>
+        <input type="email" id="patient-email" placeholder="e.g. patient@email.com" autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- Biological Sex / Gender -->
+    <div style="margin-top:20px;">
+      <label class="field-label">Biological Sex<span class="required-star">*</span></label>
+      <div class="step-subtitle" style="margin-bottom:10px;">This helps us show only the questions relevant to you.</div>
+      <div class="options-list" style="flex-direction:row; flex-wrap:wrap;">
+        <div class="opt-item radio" data-group="gender" data-value="male" onclick="radioSelect(this)" style="flex:1; min-width:130px;"><div class="opt-check"></div><div class="opt-label">Male</div></div>
+        <div class="opt-item radio" data-group="gender" data-value="female" onclick="radioSelect(this)" style="flex:1; min-width:130px;"><div class="opt-check"></div><div class="opt-label">Female</div></div>
+        <div class="opt-item radio" data-group="gender" data-value="other" onclick="radioSelect(this)" style="flex:1; min-width:130px;"><div class="opt-check"></div><div class="opt-label">Prefer not to say</div></div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-primary" onclick="validateAndNext(0)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 1 — Medical History Changes
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-1">
+    <div class="step-badge">Section 1 of 15</div>
+    <div class="step-title">Have there been any changes to your medical, social, or surgical history since your last visit with us?</div>
+
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q1" data-value="no" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">No</div></div>
+      <div class="opt-item radio" data-group="q1" data-value="yes" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Yes</div></div>
+    </div>
+
+    <div class="conditional-block" id="q1-yes-block">
+
+      <div class="sub-section">
+        <div class="sub-section-title">Do any of the following apply to you? <span style="font-weight:400;text-transform:none;">(select all that apply)</span></div>
+        <div class="options-list">
+          <div class="opt-item" data-group="q1-excl" data-value="kidney" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Severe kidney disease (on or about to be on dialysis)</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="liver" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Severe liver disease (including cirrhosis or any other severe liver disease)</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="eating" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Current or prior eating disorder</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="suicidal" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Current suicidal thoughts and/or prior suicidal attempt</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="cancer" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Cancer (active diagnosis, active treatment, or in remission/cancer-free for less than 5 continuous years; does not apply to non-melanoma skin cancer cured via simple excision)</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="transplant" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">History of organ transplant on anti-rejection medication</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="gi" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Severe gastrointestinal condition (gastroparesis, blockage, bowel resection, etc.)</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="substance" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Currently untreated/unmonitored opioid, alcohol (including binge drinking), or substance use disorder/dependence</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="mtc" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Personal or family history of medullary thyroid cancer (MTC) or multiple endocrine neoplasia syndrome type 2 (MEN2)</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="dm2-a1c" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Type 2 diabetes on insulin or with an A1c greater than 10%</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="dm2-insulin" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Type 2 diabetes (on insulin)</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="dm1" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Type 1 diabetes</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="retinopathy" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Diabetic retinopathy (diabetic eye disease), damage to the optic nerve from trauma or reduced blood flow, macular degeneration, or blindness</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="warfarin" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Use of the blood thinner warfarin (Coumadin/Jantoven)</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="pancreatitis" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">History of or current pancreatitis</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="street-drugs" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Use of street drugs or any prescription medication without a valid prescription</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="cardiac-event" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Heart attack or stroke in the past 1 year</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="hypothyroid" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label">Untreated hypothyroidism</div></div>
+          <div class="opt-item" data-group="q1-excl" data-value="none" data-none="true" onclick="multiSelect(this,'q1-excl')"><div class="opt-check"></div><div class="opt-label" style="font-weight:600;">None of the above</div></div>
+        </div>
+      </div>
+
+      <div class="conditional-block" id="female-sub-section">
+        <div class="sub-section" style="margin-top:12px;">
+          <div class="sub-section-title">Do any of the following apply to you? <span style="font-weight:400;text-transform:none;">(females only — select all that apply)</span></div>
+          <div class="options-list">
+            <div class="opt-item" data-group="q1-female" data-value="pregnant" onclick="multiSelect(this,'q1-female')"><div class="opt-check"></div><div class="opt-label">Currently or possibly pregnant, or actively trying to become pregnant</div></div>
+            <div class="opt-item" data-group="q1-female" data-value="breastfeeding" onclick="multiSelect(this,'q1-female')"><div class="opt-check"></div><div class="opt-label">Breastfeeding or bottle-feeding with breastmilk</div></div>
+            <div class="opt-item" data-group="q1-female" data-value="postpartum" onclick="multiSelect(this,'q1-female')"><div class="opt-check"></div><div class="opt-label">Have given birth to a child within the last 6 months<div class="opt-note">Requires clearance prior to GLP-1 prescription</div></div></div>
+            <div class="opt-item" data-group="q1-female" data-value="none" data-none="true" onclick="multiSelect(this,'q1-female')"><div class="opt-check"></div><div class="opt-label" style="font-weight:600;">None of the below</div></div>
+          </div>
+          <div class="alert alert-blue" id="female-none-note">
+            <div class="alert-title">Note for patients who are able to become pregnant</div>
+            We strongly recommend using an effective method of contraception during treatment with a GLP-1 medication and for at least 2 months thereafter. For those taking Zepbound or Mounjaro (tirzepatide), we recommend switching to a non-oral contraceptive method or adding a barrier method for four weeks after initiation and four weeks after each dose escalation.
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-section" style="margin-top:12px;">
+        <div class="sub-section-title">Do any of these health conditions or situations apply to you? <span style="font-weight:400;text-transform:none;">(any selection requires clearance from your primary care or other physician)</span></div>
+        <div class="options-list">
+          <div class="opt-item" data-group="q1-clearance" data-value="ibd" onclick="multiSelect(this,'q1-clearance')"><div class="opt-check"></div><div class="opt-label">Inflammatory bowel disease or IBD (Crohn's disease, ulcerative colitis, etc.)<div class="opt-note">Requires clearance prior to GLP-1 prescription</div></div></div>
+          <div class="opt-item" data-group="q1-clearance" data-value="bariatric-recent" onclick="multiSelect(this,'q1-clearance')"><div class="opt-check"></div><div class="opt-label">Bariatric or abdominal/pelvic surgery within the past 1 year<div class="opt-note">Requires clearance prior to GLP-1 prescription</div></div></div>
+          <div class="opt-item" data-group="q1-clearance" data-value="siadh" onclick="multiSelect(this,'q1-clearance')"><div class="opt-check"></div><div class="opt-label">Low sodium levels or a diagnosis of SIADH (syndrome of inappropriate antidiuretic hormone secretion)<div class="opt-note">Requires clearance prior to GLP-1 prescription</div></div></div>
+          <div class="opt-item" data-group="q1-clearance" data-value="opiates" onclick="multiSelect(this,'q1-clearance')"><div class="opt-check"></div><div class="opt-label">Ongoing chronic use of opiate pain medications<div class="opt-note">Requires clearance prior to GLP-1 prescription; excluded from sermorelin consideration</div></div></div>
+          <div class="opt-item" data-group="q1-clearance" data-value="thyroid-cancer" onclick="multiSelect(this,'q1-clearance')"><div class="opt-check"></div><div class="opt-label">Personal history of thyroid cancer (other than medullary thyroid carcinoma)</div></div>
+          <div class="opt-item" data-group="q1-clearance" data-value="bariatric-hx" onclick="multiSelect(this,'q1-clearance')"><div class="opt-check"></div><div class="opt-label">Have you had bariatric (weight loss) surgery?</div></div>
+          <div class="opt-item" data-group="q1-clearance" data-value="none" data-none="true" onclick="multiSelect(this,'q1-clearance')"><div class="opt-check"></div><div class="opt-label" style="font-weight:600;">None of the below</div></div>
+        </div>
+        <div class="conditional-block" id="opiate-details-block">
+          <div style="margin-top:12px;">
+            <label class="field-label">Please include date range, name, dose, and frequency of chronic opiate medications.<span class="required-star">*</span></label>
+            <textarea id="opiate-details" placeholder="e.g. Jan 2024–present, Oxycodone 5mg twice daily…"></textarea>
+          </div>
+        </div>
+        <div class="conditional-block" id="bariatric-details-block">
+          <div style="margin-top:12px;">
+            <label class="field-label">Please include the date range and type of bariatric surgery.</label>
+            <textarea id="bariatric-details" placeholder="e.g. March 2021, Roux-en-Y gastric bypass…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-section" style="margin-top:12px;">
+        <div class="sub-section-title">Do any of these apply to you?</div>
+        <div class="options-list">
+          <div class="opt-item" data-group="q1-cond" data-value="cad" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Coronary artery disease</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="chf" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">History of congestive heart failure</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="prolactin" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Elevated prolactin levels<div class="opt-note">Excluded from sermorelin consideration</div></div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="igf1" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Elevated IGF-1 (insulin-like growth factor) levels<div class="opt-note">Excluded from sermorelin consideration</div></div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="gallbladder" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Gallbladder disease</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="htn" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Hypertension (high blood pressure)</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="sleep-apnea" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Sleep apnea</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="prediabetes" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Prediabetes</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="dm2-noinsulin" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Type 2 diabetes (not on insulin)</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="cholesterol" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">High cholesterol</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="triglycerides" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">High triglycerides</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="liver-mild" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Liver disease (not considered severe), including fatty liver</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="kidney-mild" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Kidney disease</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="gerd" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Acid reflux/gastroesophageal reflux disease (GERD)</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="asthma" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Asthma/reactive airway disease</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="incontinence" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Urinary stress incontinence</div></div>
+          <div id="pcos-opt" class="opt-item" data-group="q1-cond" data-value="pcos" onclick="multiSelect(this,'q1-cond')" style="display:none;"><div class="opt-check"></div><div class="opt-label">Polycystic ovarian syndrome (PCOS)</div></div>
+          <div id="low-t-opt" class="opt-item" data-group="q1-cond" data-value="low-t" onclick="multiSelect(this,'q1-cond')" style="display:none;"><div class="opt-check"></div><div class="opt-label">Clinically proven low testosterone (male hypogonadism)</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="oa" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Osteoarthritis</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="mh" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">Clinically diagnosed depression and/or anxiety</div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="qt" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label">QT prolongation or other heart rhythm disorder<div class="opt-note">Excluded from ondansetron</div></div></div>
+          <div class="opt-item" data-group="q1-cond" data-value="none" data-none="true" onclick="multiSelect(this,'q1-cond')"><div class="opt-check"></div><div class="opt-label" style="font-weight:600;">None of the above</div></div>
+        </div>
+
+        <div class="conditional-block" id="cad-block">
+          <div class="sub-section" style="background:#fff;">
+            <div class="sub-section-title">Do any of the following apply to your coronary artery disease?</div>
+            <div class="options-list">
+              <div class="opt-item" data-group="cad-sub" data-value="chest-pain" onclick="multiSelect(this,'cad-sub')"><div class="opt-check"></div><div class="opt-label">Active or frequent chest pain or shortness of breath</div></div>
+              <div class="opt-item" data-group="cad-sub" data-value="hosp" onclick="multiSelect(this,'cad-sub')"><div class="opt-check"></div><div class="opt-label">Hospitalization for heart disease in the past 1 year</div></div>
+              <div class="opt-item" data-group="cad-sub" data-value="dose-inc" onclick="multiSelect(this,'cad-sub')"><div class="opt-check"></div><div class="opt-label">Multiple dose or medication increases for heart disease in the past 1 year</div></div>
+              <div class="opt-item" data-group="cad-sub" data-value="unmanaged" onclick="multiSelect(this,'cad-sub')"><div class="opt-check"></div><div class="opt-label">Heart disease not managed by a physician (cardiologist or primary care physician)</div></div>
+              <div class="opt-item" data-group="cad-sub" data-value="none" data-none="true" onclick="multiSelect(this,'cad-sub')"><div class="opt-check"></div><div class="opt-label" style="font-weight:600;">None of the below</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="conditional-block" id="chf-block">
+          <div class="sub-section" style="background:#fff;">
+            <div class="sub-section-title">Do any of the following apply to your congestive heart failure?</div>
+            <div class="options-list">
+              <div class="opt-item" data-group="chf-sub" data-value="chest-pain" onclick="multiSelect(this,'chf-sub')"><div class="opt-check"></div><div class="opt-label">Active or frequent chest pain or shortness of breath</div></div>
+              <div class="opt-item" data-group="chf-sub" data-value="hosp" onclick="multiSelect(this,'chf-sub')"><div class="opt-check"></div><div class="opt-label">Hospitalization for heart disease in the past 1 year</div></div>
+              <div class="opt-item" data-group="chf-sub" data-value="dose-inc" onclick="multiSelect(this,'chf-sub')"><div class="opt-check"></div><div class="opt-label">Multiple dose or medication increases for heart disease in the past 1 year</div></div>
+              <div class="opt-item" data-group="chf-sub" data-value="unmanaged" onclick="multiSelect(this,'chf-sub')"><div class="opt-check"></div><div class="opt-label">Heart disease not managed by a physician (cardiologist or primary care physician)</div></div>
+              <div class="opt-item" data-group="chf-sub" data-value="none" data-none="true" onclick="multiSelect(this,'chf-sub')"><div class="opt-check"></div><div class="opt-label" style="font-weight:600;">None of the below</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="conditional-block" id="gallbladder-block">
+          <div class="sub-section" style="background:#fff;">
+            <div class="sub-section-title">Has your gallbladder been surgically removed?</div>
+            <div class="options-list">
+              <div class="opt-item radio" data-group="gb-sub" data-value="yes" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Yes</div></div>
+              <div class="opt-item radio" data-group="gb-sub" data-value="no" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">No</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="conditional-block" id="interval-changes-block">
+        <div style="margin-top:4px;">
+          <label class="field-label">Please describe the interval changes in your medical, social, or surgical history since your last visit.<span class="required-star">*</span></label>
+          <textarea id="interval-changes" placeholder="Describe any changes…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(0)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(1)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 2 — Allergy Changes
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-2">
+    <div class="step-badge">Section 2 of 15</div>
+    <div class="step-title">Have there been any changes to your allergies since your last visit with us?</div>
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q2" data-value="no" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">No</div></div>
+      <div class="opt-item radio" data-group="q2" data-value="yes" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Yes</div></div>
+    </div>
+    <div class="conditional-block" id="q2-yes-block">
+      <label class="field-label" style="margin-top:4px;">Please list your current medication allergies, including name and reaction.<span class="required-star">*</span></label>
+      <textarea id="allergy-list" placeholder="e.g. Penicillin – hives and rash…"></textarea>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(1)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(2)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 3 — Medication Changes
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-3">
+    <div class="step-badge">Section 3 of 15</div>
+    <div class="step-title">Have there been any changes to your medications since your last visit with us?</div>
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q3" data-value="no" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">No</div></div>
+      <div class="opt-item radio" data-group="q3" data-value="yes" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Yes</div></div>
+    </div>
+    <div class="conditional-block" id="q3-yes-block">
+      <label class="field-label" style="margin-top:4px;">Please list your current daily medications, including name, dose, and frequency. Also indicate any medications that have started, stopped, or changed since your last visit.<span class="required-star">*</span></label>
+      <textarea id="medication-list" placeholder="e.g. Metformin 500mg twice daily (ongoing); stopped Lisinopril 10mg last month…"></textarea>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(2)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(3)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 4 — Serious Symptoms
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-4">
+    <div class="step-badge">Section 4 of 15</div>
+    <div class="step-title">Have you experienced any of the following since starting medication?</div>
+    <div class="step-subtitle">Select all that apply. Any of these are serious — please read the notes carefully.</div>
+    <div class="options-list">
+      <div class="opt-item" data-group="q4" data-value="chest-pain" onclick="multiSelect(this,'q4')"><div class="opt-check"></div><div class="opt-label">Chest pain, heart palpitations, or racing heart<div class="opt-note">Please seek care immediately at the nearest ER or urgent care in your community</div></div></div>
+      <div class="opt-item" data-group="q4" data-value="suicidal" onclick="multiSelect(this,'q4')"><div class="opt-check"></div><div class="opt-label">Concerning and/or serious mood changes or suicidal thoughts</div></div>
+      <div class="opt-item" data-group="q4" data-value="seizures" onclick="multiSelect(this,'q4')"><div class="opt-check"></div><div class="opt-label">Seizures<div class="opt-note">Please seek care immediately at the nearest ER or urgent care in your community</div></div></div>
+      <div class="opt-item" data-group="q4" data-value="none" data-none="true" onclick="multiSelect(this,'q4')"><div class="opt-check"></div><div class="opt-label" style="font-weight:600;">None of the above</div></div>
+    </div>
+    <div class="alert alert-red" id="suicidal-alert">
+      <div class="alert-title">Important — Mental Health Resources</div>
+      <div class="mh-resources">
+        <p>Thank you for choosing us to provide support with your health needs. We want to ensure our patients receive the safest and most appropriate care possible. Unfortunately, the behavioral health history you have identified requires care beyond what we can provide.</p>
+        <br/>
+        <p><strong>If you are having suicidal thoughts or are in a mental health crisis, help is available:</strong><br/>
+        Call <strong>988</strong> or text CONNECT to <strong>741741</strong> (Crisis Text Line)</p>
+        <br/>
+        <p><strong>Find a healthcare provider:</strong><br/>
+        <a href="#" onclick="return false">Find A Health Center (HRSA)</a> &nbsp;|&nbsp; <a href="#" onclick="return false">AMA Doctor Finder</a></p>
+        <br/>
+        <p><strong>Low-cost in-person therapy:</strong><br/>
+        <a href="#" onclick="return false">Reduced Cost Therapy</a></p>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(3)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(4)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 5 — Common Side Effects
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-5">
+    <div class="step-badge">Section 5 of 15</div>
+    <div class="step-title">Have you experienced any of the following since starting medication?</div>
+    <div class="step-subtitle">Select all that apply.</div>
+    <div class="options-list">
+      <div class="opt-item" data-group="q5" data-value="fullness" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Fullness or reflux</div></div>
+      <div class="opt-item" data-group="q5" data-value="nausea" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Nausea</div></div>
+      <div class="opt-item" data-group="q5" data-value="vomiting" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Vomiting<div class="opt-note">Reduce or maintain dose even if mild; consider holding if moderate or severe</div></div></div>
+      <div class="opt-item" data-group="q5" data-value="constipation" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Constipation</div></div>
+      <div class="opt-item" data-group="q5" data-value="diarrhea" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Diarrhea</div></div>
+      <div class="opt-item" data-group="q5" data-value="dizziness" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Lightheadedness/dizziness</div></div>
+      <div class="opt-item" data-group="q5" data-value="abdominal" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Abdominal pain</div></div>
+      <div class="opt-item" data-group="q5" data-value="cravings" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Food cravings</div></div>
+      <div class="opt-item" data-group="q5" data-value="appetite" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Significant decline in appetite (less than 1 meal daily)</div></div>
+      <div class="opt-item" data-group="q5" data-value="headaches" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Headaches</div></div>
+      <div class="opt-item" data-group="q5" data-value="fatigue" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Fatigue</div></div>
+      <div class="opt-item" data-group="q5" data-value="injection-site" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Redness, warmth, or pain at the injection site<div class="opt-note">Please seek care ASAP with your PCP or an urgent care in your community</div></div></div>
+      <div class="opt-item" data-group="q5" data-value="fever" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Fevers and chills<div class="opt-note">Please seek care ASAP with your PCP or an urgent care in your community</div></div></div>
+      <div class="opt-item" data-group="q5" data-value="hospitalization" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Hospitalization since your last visit</div></div>
+      <div class="opt-item" data-group="q5" data-value="other" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label">Other symptoms or side effects</div></div>
+      <div class="opt-item" data-group="q5" data-value="none" data-none="true" onclick="multiSelect(this,'q5')"><div class="opt-check"></div><div class="opt-label" style="font-weight:600;">None of the above</div></div>
+    </div>
+    <div class="conditional-block" id="hosp-detail-block">
+      <label class="field-label" style="margin-top:4px;">Please provide details on the reason and outcome of the hospitalization.<span class="required-star">*</span></label>
+      <textarea id="hosp-detail" placeholder="Reason, dates, outcome…"></textarea>
+    </div>
+    <div class="conditional-block" id="other-symptom-block">
+      <label class="field-label" style="margin-top:4px;">Please provide further details on the symptoms or side effects you have experienced.<span class="required-star">*</span></label>
+      <textarea id="other-symptom" placeholder="Describe your symptoms…"></textarea>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(4)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(5)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 6 — Symptom Severity
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-6">
+    <div class="step-badge">Section 6 of 15</div>
+    <div class="step-title">Please classify the above symptoms as:</div>
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q6" data-value="mild" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Mild</div></div>
+      <div class="opt-item radio" data-group="q6" data-value="moderate" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Moderate</div></div>
+      <div class="opt-item radio" data-group="q6" data-value="severe" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Severe</div></div>
+    </div>
+    <div class="conditional-block" id="q6a-block">
+      <label class="field-label" style="margin-top:4px;">Please explain your moderate or severe symptoms.<span class="required-star">*</span></label>
+      <textarea id="q6a-detail" placeholder="Describe the severity and impact of your symptoms…"></textarea>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(5)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(6)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 7 — Benefits
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-7">
+    <div class="step-badge">Section 7 of 15</div>
+    <div class="step-title">Since starting medication, are you seeing benefit or improvement in the following areas?</div>
+    <div class="step-subtitle">Select all that apply.</div>
+    <div class="options-list">
+      <div class="opt-item" data-group="q7" data-value="side-effects" onclick="multiSelect(this,'q7')"><div class="opt-check"></div><div class="opt-label">Side effects such as nausea/vomiting</div></div>
+      <div class="opt-item" data-group="q7" data-value="cognitive" onclick="multiSelect(this,'q7')"><div class="opt-check"></div><div class="opt-label">Cognitive function and mental clarity</div></div>
+      <div class="opt-item" data-group="q7" data-value="energy" onclick="multiSelect(this,'q7')"><div class="opt-check"></div><div class="opt-label">Energy levels</div></div>
+      <div class="opt-item" data-group="q7" data-value="insulin" onclick="multiSelect(this,'q7')"><div class="opt-check"></div><div class="opt-label">Regulation of insulin resistance and hormonal status</div></div>
+      <div class="opt-item" data-group="q7" data-value="sleep" onclick="multiSelect(this,'q7')"><div class="opt-check"></div><div class="opt-label">Sleep quality</div></div>
+      <div class="opt-item" data-group="q7" data-value="immune" onclick="multiSelect(this,'q7')"><div class="opt-check"></div><div class="opt-label">Immune system regulation</div></div>
+      <div class="opt-item" data-group="q7" data-value="muscle" onclick="multiSelect(this,'q7')"><div class="opt-check"></div><div class="opt-label">Muscle tone</div></div>
+      <div class="opt-item" data-group="q7" data-value="none" data-none="true" onclick="multiSelect(this,'q7')"><div class="opt-check"></div><div class="opt-label" style="font-weight:600;">None of the above</div></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(5)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(7)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 8 — Current Weight
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-8">
+    <div class="step-badge">Section 8 of 15</div>
+    <div class="step-title">What is your current weight?<span class="required-star">*</span></div>
+    <div class="step-subtitle">This is required before further medication can be prescribed.</div>
+    <div class="input-with-unit" style="margin-top:20px;">
+      <input type="number" id="weight" placeholder="e.g. 185" min="50" max="700" />
+      <span class="input-unit">lbs</span>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(7)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(8)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 9 — Injections / Weeks Completed
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-9">
+    <div class="step-badge">Section 9 of 15</div>
+    <div class="step-title">How many injections or weeks (if on oral medication) of the current level of medication have you completed?</div>
+    <div class="step-subtitle">This is required before further medication can be prescribed.</div>
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q9" data-value="0" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">0 injections or weeks<div class="opt-note">Too soon for refill</div></div></div>
+      <div class="opt-item radio" data-group="q9" data-value="1" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">1 injection or week<div class="opt-note">Too soon for refill</div></div></div>
+      <div class="opt-item radio" data-group="q9" data-value="2" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">2 injections or weeks<div class="opt-note">Too soon for refill</div></div></div>
+      <div class="opt-item radio" data-group="q9" data-value="3" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">3 injections or weeks</div></div>
+      <div class="opt-item radio" data-group="q9" data-value="4" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">4 injections or weeks</div></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(8)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(9)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 10 — Last Dose
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-10">
+    <div class="step-badge">Section 10 of 15</div>
+    <div class="step-title">When was your last dose of medication?</div>
+    <div class="step-subtitle">This is required before further medication can be prescribed.</div>
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q10" data-value="0-5" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">0–5 days ago</div></div>
+      <div class="opt-item radio" data-group="q10" data-value="6-10" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">6–10 days ago</div></div>
+      <div class="opt-item radio" data-group="q10" data-value="11-14" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">11–14 days ago</div></div>
+      <div class="opt-item radio" data-group="q10" data-value="2-4wk" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">More than 2 weeks ago but within the last 4 weeks</div></div>
+      <div class="opt-item radio" data-group="q10" data-value="4wk+" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">More than 4 weeks ago</div></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(9)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(10)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 11 — Blood Pressure
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-11">
+    <div class="step-badge">Section 11 of 15</div>
+    <div class="step-title">What is your current or average blood pressure range?</div>
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q11" data-value="normal" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">&lt;120/80 <span style="color:var(--gray-500)">(Normal)</span></div></div>
+      <div class="opt-item radio" data-group="q11" data-value="elevated" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">120–129/&lt;80 <span style="color:var(--gray-500)">(Elevated)</span></div></div>
+      <div class="opt-item radio" data-group="q11" data-value="high1" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">130–139/80–89 <span style="color:var(--gray-500)">(High Stage 1)</span></div></div>
+      <div class="opt-item radio" data-group="q11" data-value="high2" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">140–159/90–99 <span style="color:var(--gray-500)">(High Stage 2)</span></div></div>
+      <div class="opt-item radio" data-group="q11" data-value="crisis" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">≥160/100 <span style="color:var(--gray-500)">(High Stage 3)</span></div></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(10)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(11)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 12 — Heart Rate
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-12">
+    <div class="step-badge">Section 12 of 15</div>
+    <div class="step-title">What is your current or average heart rate range?</div>
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q12" data-value="slow" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">&lt;60 beats per minute <span style="color:var(--gray-500)">(Slow)</span></div></div>
+      <div class="opt-item radio" data-group="q12" data-value="normal" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">60–100 beats per minute <span style="color:var(--gray-500)">(Normal)</span></div></div>
+      <div class="opt-item radio" data-group="q12" data-value="slightly-fast" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">101–110 beats per minute <span style="color:var(--gray-500)">(Slightly Fast)</span></div></div>
+      <div class="opt-item radio" data-group="q12" data-value="fast" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">&gt;110 beats per minute <span style="color:var(--gray-500)">(Fast)</span></div></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(11)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(12)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 13 — Dose Preference
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-13">
+    <div class="step-badge">Section 13 of 15</div>
+    <div class="step-title">Do you have a preference with regard to increasing, decreasing, or maintaining your current dose?</div>
+    <div class="step-subtitle">This does not guarantee the preferred outcome — the final decision will be made by the clinician based on their evaluation.</div>
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q13" data-value="increase" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Increase my dose</div></div>
+      <div class="opt-item radio" data-group="q13" data-value="decrease" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Decrease my dose</div></div>
+      <div class="opt-item radio" data-group="q13" data-value="maintain" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Maintain my current dose</div></div>
+      <div class="opt-item radio" data-group="q13" data-value="no-pref" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">No preference</div></div>
+    </div>
+    <div class="conditional-block" id="q13a-block">
+      <label class="field-label" style="margin-top:4px;">Please explain the reason for your preference.<span class="required-star">*</span></label>
+      <textarea id="q13a-detail" placeholder="Describe why you prefer this dose adjustment…"></textarea>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(12)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(13)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 14 — Ondansetron Refill
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-14">
+    <div class="step-badge">Section 14 of 15</div>
+    <div class="step-title">Do you need a refill on your ondansetron (Zofran) nausea/vomiting medication?</div>
+    <div class="options-list" style="margin-top:20px;">
+      <div class="opt-item radio" data-group="q14" data-value="yes" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">Yes</div></div>
+      <div class="opt-item radio" data-group="q14" data-value="no" onclick="radioSelect(this)"><div class="opt-check"></div><div class="opt-label">No</div></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(13)">Back</button>
+      <button class="btn btn-primary" onclick="validateAndNext(14)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       STEP 15 — Additional Information
+  ════════════════════════════════════════ -->
+  <div class="card step" id="step-15">
+    <div class="step-badge">Section 15 of 15</div>
+    <div class="step-title">Do you have any further information you would like the clinician to know?</div>
+    <div class="alert alert-amber show" style="margin-top:0; margin-bottom:18px;">
+      Please do not include urgent or emergency medical information here, as this is not reviewed immediately.
+    </div>
+    <textarea id="q15-detail" placeholder="Any additional information for the clinician… (optional)" style="min-height:100px;"></textarea>
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goToStep(14)">Back</button>
+      <button class="btn btn-primary" onclick="submitForm()">Submit Form</button>
+    </div>
+  </div>
+
+</div><!-- /form-outer -->
+
+<!-- ════════════════════════════════════════
+     EXCLUSION PAGE
+════════════════════════════════════════ -->
+<div class="form-outer">
+  <div class="card special-page" id="page-excluded">
+    <div class="special-icon icon-red">⚠️</div>
+    <div class="special-title">Thank You for Completing the Form</div>
+    <div class="special-body" id="excluded-reason">
+      Based on your answers, we are unable to proceed with your refill at this time. A member of our care team may reach out to you to discuss next steps or alternative options. If you have urgent concerns, please contact your nearest emergency room or urgent care.
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:13px; color:var(--gray-500);">If you believe this is an error or have questions, please contact us directly.</div>
+    <div class="payload-section">
+      <div class="payload-header">
+        <span class="payload-label">Submission Payload</span>
+        <button class="btn-copy" id="copy-btn-excluded" onclick="copyPayload('payload-excluded','copy-btn-excluded')">Copy JSON</button>
+      </div>
+      <div class="json-block" id="payload-excluded"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     TOO SOON PAGE
+════════════════════════════════════════ -->
+<div class="form-outer">
+  <div class="card special-page" id="page-too-soon">
+    <div class="special-icon icon-red">⏳</div>
+    <div class="special-title">Too Soon for a Refill</div>
+    <div class="special-body">
+      It looks like you have not yet completed enough injections or weeks at your current medication level to be eligible for a refill at this time. Please continue your current regimen and return when you have completed at least 3 injections or weeks.
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:13px; color:var(--gray-500);">Questions? Please reach out to our care team.</div>
+    <div class="payload-section">
+      <div class="payload-header">
+        <span class="payload-label">Submission Payload</span>
+        <button class="btn-copy" id="copy-btn-soon" onclick="copyPayload('payload-soon','copy-btn-soon')">Copy JSON</button>
+      </div>
+      <div class="json-block" id="payload-soon"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SUCCESS PAGE
+════════════════════════════════════════ -->
+<div class="form-outer">
+  <div class="card special-page" id="page-success">
+    <div class="special-icon icon-green">✓</div>
+    <div class="special-title">Intake Form Complete!</div>
+    <div class="special-body">
+      Thank you for completing your refill intake form. Your responses have been submitted and a clinician will review them shortly. You will be notified once your refill has been processed.
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:13px; color:var(--gray-500);">If you have urgent medical concerns, please contact your nearest emergency room or urgent care.</div>
+    <div class="payload-section">
+      <div class="payload-header">
+        <span class="payload-label">Submission Payload</span>
+        <button class="btn-copy" id="copy-btn-success" onclick="copyPayload('payload-success','copy-btn-success')">Copy JSON</button>
+      </div>
+      <div class="json-block" id="payload-success"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Client list (mirrors clients.csv) ──────────────────────────
+const CLIENTS = [
+  "24Hr Doc ADx","Agile Telehealth","Alloy Women's Health","Alto Pharmacy",
+  "AltrixCare","Ascend Health Partners","Bask Health","Beluga Health",
+  "Brightside Health","Calibrate Health","CareFirst Medical","ClarityRx",
+  "Done Health","Eden Health Partners","Elevate Wellness Clinic","Empower Clinics",
+  "Form Health","Found Health","Fountain Life","GoodRx Care","Harbor Health",
+  "Hers","Hims","IntelliMed Group","LifeMD","Lumen Health","Maximus Telehealth",
+  "Mochi Health","Noom Med","Ohana Health","Omni Wellness","Optimum Health Direct",
+  "PlushCare","Prescriptive Health","Prime Telehealth","ReviveRx","Ro Health",
+  "Rocky Mountain Telehealth","Sequence Health","Sesame Care","Slate Health",
+  "SlimRx","SteadyMD","Structure Health","Teladoc Health","Telo Health",
+  "ThriveRx","Transcarent","Veda Health","Vida Health","Wheel Health","Wisp"
+];
+
+// ─── State ──────────────────────────────────────────────────────
+const TOTAL_STEPS = 16;
+let currentStep = 0;
+let selectedClient = '';
+let focusedClientIndex = -1;
+let filteredClients = [...CLIENTS];
+
+// ─── Progress ───────────────────────────────────────────────────
+function updateProgress(step) {
+  const pct = Math.round(((step + 1) / TOTAL_STEPS) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = `Step ${step + 1} of ${TOTAL_STEPS}`;
+}
+
+// ─── Navigation ─────────────────────────────────────────────────
+function goToStep(n) {
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step-' + n).classList.add('active');
+  updateProgress(n);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showSpecialPage(pageId, reason) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('progressWrap').style.display = 'none';
+  if (reason) document.getElementById('excluded-reason').textContent = reason;
+  const payload = buildPayload();
+  const payloadBlockId = pageId === 'page-excluded' ? 'payload-excluded'
+                       : pageId === 'page-too-soon'  ? 'payload-soon'
+                       : 'payload-success';
+  document.getElementById(payloadBlockId).innerHTML = syntaxHighlight(JSON.stringify(payload, null, 2));
+  document.getElementById(pageId).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── Client dropdown ────────────────────────────────────────────
+function renderClientOptions(list) {
+  const container = document.getElementById('clientList');
+  if (list.length === 0) {
+    container.innerHTML = '<div class="client-no-results">No clients found</div>';
+    return;
+  }
+  container.innerHTML = list.map((name, i) =>
+    `<div class="client-option${name === selectedClient ? ' selected' : ''}"
+          data-index="${i}" data-name="${name.replace(/"/g,'&quot;')}"
+          onclick="selectClient('${name.replace(/'/g,"\\'")}')">
+       ${name}
+     </div>`
+  ).join('');
+}
+
+function toggleClientDropdown() {
+  const trigger = document.getElementById('clientTrigger');
+  const dropdown = document.getElementById('clientDropdown');
+  const open = dropdown.classList.toggle('open');
+  trigger.classList.toggle('open', open);
+  trigger.setAttribute('aria-expanded', open);
+  if (open) {
+    filteredClients = [...CLIENTS];
+    renderClientOptions(filteredClients);
+    document.getElementById('clientSearch').value = '';
+    setTimeout(() => document.getElementById('clientSearch').focus(), 50);
+  }
+}
+
+function closeClientDropdown() {
+  document.getElementById('clientDropdown').classList.remove('open');
+  document.getElementById('clientTrigger').classList.remove('open');
+  document.getElementById('clientTrigger').setAttribute('aria-expanded', 'false');
+}
+
+function selectClient(name) {
+  selectedClient = name;
+  document.getElementById('client-name-hidden').value = name;
+  document.getElementById('clientTriggerText').textContent = name;
+  document.getElementById('clientTriggerText').classList.remove('client-trigger-placeholder');
+  document.getElementById('clientTrigger').classList.add('has-value');
+  closeClientDropdown();
+}
+
+function filterClients(query) {
+  const q = query.toLowerCase();
+  filteredClients = CLIENTS.filter(c => c.toLowerCase().includes(q));
+  focusedClientIndex = -1;
+  renderClientOptions(filteredClients);
+}
+
+function handleClientKey(e) {
+  const options = document.querySelectorAll('.client-option');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    focusedClientIndex = Math.min(focusedClientIndex + 1, options.length - 1);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    focusedClientIndex = Math.max(focusedClientIndex - 1, 0);
+  } else if (e.key === 'Enter' && focusedClientIndex >= 0) {
+    e.preventDefault();
+    const opt = options[focusedClientIndex];
+    if (opt) selectClient(opt.dataset.name);
+    return;
+  } else if (e.key === 'Escape') {
+    closeClientDropdown();
+    return;
+  }
+  options.forEach((o, i) => o.classList.toggle('focused', i === focusedClientIndex));
+  if (focusedClientIndex >= 0) options[focusedClientIndex].scrollIntoView({ block: 'nearest' });
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.client-field')) closeClientDropdown();
+});
+
+// ─── Radio / Multi select ────────────────────────────────────────
+function radioSelect(el) {
+  const group = el.dataset.group;
+  document.querySelectorAll(`.opt-item.radio[data-group="${group}"]`).forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  onSelectionChange(group, el.dataset.value);
+}
+
+function multiSelect(el, group) {
+  if (el.dataset.none === 'true') {
+    document.querySelectorAll(`.opt-item[data-group="${group}"]`).forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+  } else {
+    const noneEl = document.querySelector(`.opt-item[data-group="${group}"][data-none="true"]`);
+    if (noneEl) noneEl.classList.remove('selected');
+    el.classList.toggle('selected');
+  }
+  onSelectionChange(group, getSelected(group));
+}
+
+function getSelected(group) {
+  return [...document.querySelectorAll(`.opt-item[data-group="${group}"].selected`)].map(i => i.dataset.value);
+}
+
+function getRadio(group) {
+  const el = document.querySelector(`.opt-item.radio[data-group="${group}"].selected`);
+  return el ? el.dataset.value : null;
+}
+
+function show(id, visible) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show', visible);
+}
+
+// ─── Gender-aware visibility ─────────────────────────────────────
+function applyGenderVisibility() {
+  const gender = getRadio('gender');
+  const isFemale = gender === 'female' || gender === 'other';
+  const isMale   = gender === 'male'   || gender === 'other';
+
+  // Female-only sub-section: only relevant when q1=yes AND female/other
+  const q1val = getRadio('q1');
+  show('female-sub-section', q1val === 'yes' && isFemale);
+
+  // Gender-specific conditions
+  const pcosEl  = document.getElementById('pcos-opt');
+  const lowTEl  = document.getElementById('low-t-opt');
+  if (pcosEl)  pcosEl.style.display  = isFemale ? '' : 'none';
+  if (lowTEl)  lowTEl.style.display  = isMale   ? '' : 'none';
+
+  // If a now-hidden option was selected, deselect it
+  if (!isFemale && pcosEl && pcosEl.classList.contains('selected')) {
+    pcosEl.classList.remove('selected');
+  }
+  if (!isMale && lowTEl && lowTEl.classList.contains('selected')) {
+    lowTEl.classList.remove('selected');
+  }
+}
+
+// ─── Reactive logic ──────────────────────────────────────────────
+function onSelectionChange(group, value) {
+  const sel = Array.isArray(value) ? value : [value];
+  switch (group) {
+    case 'gender':
+      applyGenderVisibility();
+      break;
+    case 'q1':
+      show('q1-yes-block', value === 'yes');
+      applyGenderVisibility(); // re-evaluate female section with updated q1
+      break;
+    case 'q1-excl':
+      show('interval-changes-block', sel.includes('none'));
+      break;
+    case 'q1-female':
+      show('female-none-note', sel.includes('none'));
+      break;
+    case 'q1-clearance':
+      show('opiate-details-block', sel.includes('opiates'));
+      show('bariatric-details-block', sel.includes('bariatric-hx'));
+      break;
+    case 'q1-cond':
+      show('cad-block', sel.includes('cad'));
+      show('chf-block', sel.includes('chf'));
+      show('gallbladder-block', sel.includes('gallbladder'));
+      break;
+    case 'q2':
+      show('q2-yes-block', value === 'yes');
+      break;
+    case 'q3':
+      show('q3-yes-block', value === 'yes');
+      break;
+    case 'q4':
+      show('suicidal-alert', sel.includes('suicidal'));
+      break;
+    case 'q5':
+      show('hosp-detail-block', sel.includes('hospitalization'));
+      show('other-symptom-block', sel.includes('other'));
+      break;
+    case 'q6':
+      show('q6a-block', value === 'moderate' || value === 'severe');
+      break;
+    case 'q13':
+      show('q13a-block', value !== 'no-pref');
+      break;
+  }
+}
+
+// ─── Payload builder ────────────────────────────────────────────
+function getOptionLabel(item) {
+  const labelEl = item.querySelector('.opt-label');
+  const clone = labelEl.cloneNode(true);
+  clone.querySelectorAll('.opt-note, span').forEach(el => el.remove());
+  return clone.textContent.trim();
+}
+
+function buildCheckboxPairs(group) {
+  return [...document.querySelectorAll(`.opt-item[data-group="${group}"]`)].map(item => {
+    return [getOptionLabel(item), item.classList.contains('selected')];
+  });
+}
+
+function buildSelectedLabels(group) {
+  return [...document.querySelectorAll(`.opt-item[data-group="${group}"].selected`)].map(getOptionLabel);
+}
+
+function buildPayload() {
+  const p = {};
+
+  p.client_name   = document.getElementById('client-name-hidden').value || '';
+  p.patient_id    = document.getElementById('patient-id').value.trim();
+  p.patient_email = document.getElementById('patient-email').value.trim();
+
+  const genderVal = getRadio('gender');
+  const genderLabels = { male: 'Male', female: 'Female', other: 'Prefer not to say' };
+  p.gender = genderLabels[genderVal] || '';
+
+  const isFemaleOrOther = genderVal === 'female' || genderVal === 'other';
+
+  // q0
+  const q0val = getRadio('q1');
+  p.q0_have_there_been_any_changes_to_medical_social_or_surgical_history =
+    q0val === 'yes' ? 'Yes' : q0val === 'no' ? 'No' : '';
+
+  if (q0val === 'yes') {
+    p.q1_do_any_of_the_following_apply_to_you_exclusions = buildCheckboxPairs('q1-excl');
+    // q2 only included for female / prefer-not-to-say patients
+    if (isFemaleOrOther) p.q2_female_only_exclusions = buildCheckboxPairs('q1-female');
+
+    const exclSel = getSelected('q1-excl');
+    if (exclSel.includes('none')) {
+      const txt = document.getElementById('interval-changes').value.trim();
+      if (txt) p.q3_interval_history_change_explanation = txt;
+    }
+
+    p.q4_conditions_requiring_clearance = buildCheckboxPairs('q1-clearance');
+    const clearSel = getSelected('q1-clearance');
+    if (clearSel.includes('opiates')) {
+      const txt = document.getElementById('opiate-details').value.trim();
+      if (txt) p.q4_opiate_medication_details = txt;
+    }
+    if (clearSel.includes('bariatric-hx')) {
+      p.q5_have_you_had_bariatric_surgery = 'Yes';
+      const txt = document.getElementById('bariatric-details').value.trim();
+      if (txt) p.q5_bariatric_surgery_details = txt;
+    }
+
+    p.q6_other_medical_conditions = buildSelectedLabels('q1-cond');
+  }
+
+  // q7 — medication changes
+  const q7val = getRadio('q3');
+  p.q7_have_there_been_any_changes_to_your_medications = q7val === 'yes' ? 'Yes' : q7val === 'no' ? 'No' : '';
+  if (q7val === 'yes') {
+    const txt = document.getElementById('medication-list').value.trim();
+    if (txt) p.q7_current_daily_medications = txt;
+  }
+
+  // q8 — serious symptoms + severity
+  p.q8_serious_symptoms_since_starting_medication = buildSelectedLabels('q4');
+  const sevVal = getRadio('q6');
+  if (sevVal) {
+    p.q8_symptom_severity = sevVal.charAt(0).toUpperCase() + sevVal.slice(1);
+    if (sevVal === 'moderate' || sevVal === 'severe') {
+      const txt = document.getElementById('q6a-detail').value.trim();
+      if (txt) p.q8_moderate_or_severe_symptom_explanation = txt;
+    }
+  }
+
+  // q9 — side effects
+  p.q9_other_side_effects_since_starting_medication = buildSelectedLabels('q5');
+
+  // q10 — benefits
+  p.q10_benefits_or_improvements_since_starting_medication = buildSelectedLabels('q7');
+
+  // q11 — weight
+  const wt = document.getElementById('weight').value;
+  if (wt) p.q11_current_weight_lbs = wt;
+
+  // q12 — injections
+  const q9el = document.querySelector('.opt-item.radio[data-group="q9"].selected');
+  if (q9el) p.q12_injections_or_weeks_completed_at_current_dose = q9el.dataset.value;
+
+  // q13 — last dose
+  const q10el = document.querySelector('.opt-item.radio[data-group="q10"].selected');
+  if (q10el) p.q13_when_was_your_last_dose = getOptionLabel(q10el);
+
+  // q14 — blood pressure
+  const q11el = document.querySelector('.opt-item.radio[data-group="q11"].selected');
+  if (q11el) p.q14_current_or_average_blood_pressure_range = getOptionLabel(q11el);
+
+  // q15 — heart rate
+  const q12el = document.querySelector('.opt-item.radio[data-group="q12"].selected');
+  if (q12el) p.q15_current_or_average_heart_rate_range = getOptionLabel(q12el);
+
+  // q16 — dose preference
+  const q13val = getRadio('q13');
+  const q13el  = document.querySelector('.opt-item.radio[data-group="q13"].selected');
+  if (q13el) {
+    p.q16_dose_preference = getOptionLabel(q13el);
+    if (q13val !== 'no-pref') {
+      const txt = document.getElementById('q13a-detail').value.trim();
+      if (txt) p.q16_dose_preference_reason = txt;
+    }
+  }
+
+  // q17 — ondansetron
+  const q14val = getRadio('q14');
+  if (q14val) p.q17_do_you_need_a_refill_on_ondansetron = q14val === 'yes' ? 'Yes' : 'No';
+
+  // q18 — allergy changes
+  const q18val = getRadio('q2');
+  p.q18_have_there_been_any_changes_to_your_allergies = q18val === 'yes' ? 'Yes' : q18val === 'no' ? 'No' : '';
+  if (q18val === 'yes') {
+    const txt = document.getElementById('allergy-list').value.trim();
+    if (txt) p.q18_current_medication_allergies = txt;
+  }
+
+  // q19 — further info
+  const q19txt = document.getElementById('q15-detail').value.trim();
+  if (q19txt) p.q19_further_information_for_doctor = q19txt;
+
+  return p;
+}
+
+// ─── JSON syntax highlighter ────────────────────────────────────
+function syntaxHighlight(json) {
+  return json
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+      match => {
+        if (/^"/.test(match)) {
+          return /:$/.test(match)
+            ? `<span class="json-key">${match}</span>`
+            : `<span class="json-str">${match}</span>`;
+        }
+        if (/true|false/.test(match)) return `<span class="json-bool">${match}</span>`;
+        if (/null/.test(match))       return `<span class="json-null">${match}</span>`;
+        return `<span class="json-num">${match}</span>`;
+      });
+}
+
+// ─── Copy payload ───────────────────────────────────────────────
+function copyPayload(blockId, btnId) {
+  const text = document.getElementById(blockId).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(btnId);
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy JSON'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ─── Validation & navigation ─────────────────────────────────────
+function validateAndNext(step) {
+
+  // ── Step 0: Patient info ──
+  if (step === 0) {
+    if (!document.getElementById('client-name-hidden').value) {
+      alert('Please select a client name.'); return;
+    }
+    const pid = document.getElementById('patient-id').value.trim();
+    if (!pid) { alert('Please enter the Patient ID.'); return; }
+    const email = document.getElementById('patient-email').value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert('Please enter a valid patient email address.'); return;
+    }
+    if (!getRadio('gender')) { alert('Please select a biological sex.'); return; }
+    goToStep(1); return;
+  }
+
+  // ── Step 1: Medical history ──
+  if (step === 1) {
+    const q1 = getRadio('q1');
+    if (!q1) { alert('Please answer this question before continuing.'); return; }
+
+    if (q1 === 'yes') {
+      const excl = getSelected('q1-excl');
+      if (excl.length === 0) { alert('Please make a selection in the exclusion conditions list.'); return; }
+
+      const exclNonNone = excl.filter(v => v !== 'none');
+      if (exclNonNone.length > 0) {
+        showSpecialPage('page-excluded', 'Based on the medical history changes you reported, we are unable to proceed with your refill at this time. A member of our care team will reach out to discuss your options.');
+        return;
+      }
+
+      const gender = getRadio('gender');
+      const isFemaleOrOther = gender === 'female' || gender === 'other';
+      if (isFemaleOrOther) {
+        const female = getSelected('q1-female');
+        if (female.length === 0) {
+          alert('Please answer the female-specific health questions.'); return;
+        }
+        if (female.includes('pregnant') || female.includes('breastfeeding')) {
+          showSpecialPage('page-excluded', 'Based on your current status (pregnant, possibly pregnant, or breastfeeding), we are unable to prescribe GLP-1 medication at this time. Please speak with your primary care physician.');
+          return;
+        }
+      }
+
+      const cadSel = getSelected('cad-sub');
+      if (cadSel.length > 0 && !cadSel.includes('none')) {
+        showSpecialPage('page-excluded', 'Based on your coronary artery disease status, we are unable to proceed with your refill at this time. Please consult with your cardiologist or primary care physician.');
+        return;
+      }
+
+      const chfSel = getSelected('chf-sub');
+      if (chfSel.length > 0 && !chfSel.includes('none')) {
+        showSpecialPage('page-excluded', 'Based on your congestive heart failure status, we are unable to proceed with your refill at this time. Please consult with your cardiologist or primary care physician.');
+        return;
+      }
+
+      const cond = getSelected('q1-cond');
+      if (cond.includes('gallbladder') && getRadio('gb-sub') === 'no') {
+        showSpecialPage('page-excluded', 'Based on your gallbladder disease status, we are unable to proceed with your refill at this time.');
+        return;
+      }
+
+      if (excl.includes('none')) {
+        if (!document.getElementById('interval-changes').value.trim()) {
+          alert('Please describe the changes to your medical history.'); return;
+        }
+      }
+    }
+    goToStep(2); return;
+  }
+
+  // ── Step 2: Allergies ──
+  if (step === 2) {
+    const q2 = getRadio('q2');
+    if (!q2) { alert('Please answer this question before continuing.'); return; }
+    if (q2 === 'yes' && !document.getElementById('allergy-list').value.trim()) {
+      alert('Please list your current medication allergies.'); return;
+    }
+    goToStep(3); return;
+  }
+
+  // ── Step 3: Medications ──
+  if (step === 3) {
+    const q3 = getRadio('q3');
+    if (!q3) { alert('Please answer this question before continuing.'); return; }
+    if (q3 === 'yes' && !document.getElementById('medication-list').value.trim()) {
+      alert('Please list your current medications.'); return;
+    }
+    goToStep(4); return;
+  }
+
+  // ── Step 4: Serious symptoms ──
+  if (step === 4) {
+    const sel = getSelected('q4');
+    if (sel.length === 0) { alert('Please select at least one option.'); return; }
+    if (sel.includes('chest-pain') || sel.includes('seizures')) {
+      showSpecialPage('page-excluded', 'You have reported symptoms requiring immediate medical attention (chest pain, heart palpitations, or seizures). Please seek care immediately at the nearest ER or urgent care. We cannot proceed with your refill until these symptoms are addressed.');
+      return;
+    }
+    if (sel.includes('suicidal')) {
+      showSpecialPage('page-excluded', 'Thank you for choosing us to provide support with your health needs. We want to ensure our patients receive the safest and most appropriate care possible. Unfortunately, the behavioral health history you have identified requires care beyond what we can provide. If you are having suicidal thoughts or are in a mental health crisis, help is available — call 988 or text CONNECT to 741741 (Crisis Text Line).');
+      return;
+    }
+    goToStep(5); return;
+  }
+
+  // ── Step 5: Side effects ──
+  if (step === 5) {
+    const sel = getSelected('q5');
+    if (sel.length === 0) { alert('Please select at least one option.'); return; }
+    if (sel.includes('hospitalization') && !document.getElementById('hosp-detail').value.trim()) {
+      alert('Please provide details on the hospitalization.'); return;
+    }
+    if (sel.includes('other') && !document.getElementById('other-symptom').value.trim()) {
+      alert('Please describe the other symptoms.'); return;
+    }
+    goToStep(sel.includes('none') ? 7 : 6); return;
+  }
+
+  // ── Step 6: Severity ──
+  if (step === 6) {
+    const sev = getRadio('q6');
+    if (!sev) { alert('Please classify the severity of your symptoms.'); return; }
+    if ((sev === 'moderate' || sev === 'severe') && !document.getElementById('q6a-detail').value.trim()) {
+      alert('Please explain your ' + sev + ' symptoms.'); return;
+    }
+    goToStep(7); return;
+  }
+
+  // ── Step 7: Benefits ──
+  if (step === 7) {
+    if (getSelected('q7').length === 0) { alert('Please select at least one option.'); return; }
+    goToStep(8); return;
+  }
+
+  // ── Step 8: Weight ──
+  if (step === 8) {
+    const w = document.getElementById('weight').value;
+    if (!w || isNaN(w) || +w < 50 || +w > 700) { alert('Please enter a valid weight in pounds.'); return; }
+    goToStep(9); return;
+  }
+
+  // ── Step 9: Injections ──
+  if (step === 9) {
+    const q9 = getRadio('q9');
+    if (!q9) { alert('Please select an option.'); return; }
+    if (q9 === '0' || q9 === '1' || q9 === '2') { showSpecialPage('page-too-soon'); return; }
+    goToStep(10); return;
+  }
+
+  // ── Step 10: Last dose ──
+  if (step === 10) {
+    if (!getRadio('q10')) { alert('Please select an option.'); return; }
+    goToStep(11); return;
+  }
+
+  // ── Step 11: Blood pressure ──
+  if (step === 11) {
+    const q11 = getRadio('q11');
+    if (!q11) { alert('Please select your blood pressure range.'); return; }
+    if (q11 === 'crisis') {
+      showSpecialPage('page-excluded', 'Your reported blood pressure (≥160/100) is at a level that requires immediate medical attention. Please contact your primary care physician or seek care at an urgent care or emergency room before continuing with your medication refill.');
+      return;
+    }
+    goToStep(12); return;
+  }
+
+  // ── Step 12: Heart rate ──
+  if (step === 12) {
+    const q12 = getRadio('q12');
+    if (!q12) { alert('Please select your heart rate range.'); return; }
+    if (q12 === 'fast') {
+      showSpecialPage('page-excluded', 'Your reported heart rate (>110 bpm) requires evaluation before we can proceed with your medication refill. Please contact your primary care physician or seek care at an urgent care or emergency room.');
+      return;
+    }
+    goToStep(13); return;
+  }
+
+  // ── Step 13: Dose preference ──
+  if (step === 13) {
+    const q13 = getRadio('q13');
+    if (!q13) { alert('Please select a dose preference.'); return; }
+    if (q13 !== 'no-pref' && !document.getElementById('q13a-detail').value.trim()) {
+      alert('Please explain your dose preference.'); return;
+    }
+    goToStep(14); return;
+  }
+
+  // ── Step 14: Ondansetron ──
+  if (step === 14) {
+    if (!getRadio('q14')) { alert('Please select an option.'); return; }
+    goToStep(15); return;
+  }
+}
+
+function submitForm() {
+  showSpecialPage('page-success');
+}
+
+// ─── Init ────────────────────────────────────────────────────────
+updateProgress(0);
+</script>
+</body>
+</html>
