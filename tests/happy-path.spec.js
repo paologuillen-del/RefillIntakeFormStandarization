@@ -30,9 +30,9 @@ async function next(page) {
   await page.locator('.step.active .btn-primary').click();
 }
 
-// Progress counter is "Step N of 16"; currentStep is 0-based so display = step+1
+// Progress counter is "Step N of 17"; currentStep is 0-based so display = step+1
 async function expectStep(page, n) {
-  await expect(page.locator('#progressCount')).toHaveText(`Step ${n + 1} of 16`);
+  await expect(page.locator('#progressCount')).toHaveText(`Step ${n + 1} of 17`);
 }
 
 // Fast-forward through steps 1–3 (no changes) then step 4 (none)
@@ -43,12 +43,7 @@ async function passClinicialPrelude(page) {
   await pickOption(page, 'q4', 'none'); await next(page); // step 4
 }
 
-// ─── afterEach: 10-second pause so you can read the final page ──
 test.describe('Refill Intake Form — Happy Path', () => {
-
-  test.afterEach(async ({ page }) => {
-    await page.waitForTimeout(10_000);
-  });
 
   // ════════════════════════════════════════════════
   // STEP 0  — Patient Information
@@ -149,6 +144,12 @@ test.describe('Refill Intake Form — Happy Path', () => {
     await pickOption(page, 'q12', 'normal'); await next(page);
     await pickOption(page, 'q13', 'no-pref'); await next(page);
     await pickOption(page, 'q14', 'no'); await next(page);
+    await page.locator('#shipping-street').fill('123 Main St');
+    await page.locator('#shipping-city').fill('Austin');
+    await page.locator('#shipping-state').fill('TX');
+    await page.locator('#shipping-zip').fill('78701');
+    await page.locator('#shipping-country').fill('United States');
+    await next(page);
     await page.locator('#q15-detail').fill('No additional notes.');
     await page.locator('.step.active .btn-primary').click();
 
@@ -202,6 +203,12 @@ test.describe('Refill Intake Form — Happy Path', () => {
     await pickOption(page, 'q12', 'normal'); await next(page);
     await pickOption(page, 'q13', 'no-pref'); await next(page);
     await pickOption(page, 'q14', 'no'); await next(page);
+    await page.locator('#shipping-street').fill('456 Oak Ave');
+    await page.locator('#shipping-city').fill('Dallas');
+    await page.locator('#shipping-state').fill('TX');
+    await page.locator('#shipping-zip').fill('75201');
+    await page.locator('#shipping-country').fill('United States');
+    await next(page);
     await page.locator('.step.active .btn-primary').click();
 
     await expect(page.locator('#page-success')).toBeVisible();
@@ -372,7 +379,6 @@ test.describe('Refill Intake Form — Happy Path', () => {
     await pickOption(page, 'q1', 'yes');
     await pickOption(page, 'q1-excl', 'none');
     await page.locator('#interval-changes').fill('Diagnosed with CAD.');
-    await pickOption(page, 'q1-female', 'none'); // male default skips, but helper picks male so this won't show — keeping for safety via male path
     await pickOption(page, 'q1-clearance', 'none');
     await pickOption(page, 'q1-cond', 'cad');
     await expect(page.locator('#cad-block')).toBeVisible();
@@ -591,5 +597,132 @@ test.describe('Refill Intake Form — Happy Path', () => {
     await page.locator('#q13a-detail').fill('Tolerating current dose well.');
     await next(page);
     await expectStep(page, 14);
+  });
+
+  // ════════════════════════════════════════════════
+  // FULL PAYLOAD — every payload field populated
+  // ════════════════════════════════════════════════
+
+  test('full payload — all fields present in success payload', async ({ page }) => {
+    await page.goto(FILE_URL);
+
+    // Step 0: prefer-not-to-say gender so female sub-section is included
+    await fillStep0(page, { client: 'Ro Health', patientId: 'FULL001', patientEmail: 'full@example.com', gender: 'other' });
+    await next(page);
+
+    // Step 1: yes → excl=none + interval text, postpartum (no DQ), opiates+bariatric-hx clearance, conditions
+    await pickOption(page, 'q1', 'yes');
+    await pickOption(page, 'q1-excl', 'none');
+    await page.locator('#interval-changes').fill('New diagnosis of hypertension; started lisinopril.');
+    await pickOption(page, 'q1-female', 'postpartum');
+    await pickOption(page, 'q1-clearance', 'opiates');
+    await pickOption(page, 'q1-clearance', 'bariatric-hx');
+    await page.locator('#opiate-details').fill('Oxycodone 5mg since Jan 2024.');
+    await page.locator('#bariatric-details').fill('Roux-en-Y bypass, March 2021.');
+    await pickOption(page, 'q1-cond', 'htn');
+    await pickOption(page, 'q1-cond', 'sleep-apnea');
+    await next(page);
+
+    // Step 2: allergy changes = yes + free text
+    await pickOption(page, 'q2', 'yes');
+    await page.locator('#allergy-list').fill('Penicillin (rash).');
+    await next(page);
+
+    // Step 3: medication changes = yes + free text
+    await pickOption(page, 'q3', 'yes');
+    await page.locator('#medication-list').fill('Metformin 500mg daily, Lisinopril 10mg daily.');
+    await next(page);
+
+    // Step 4: serious symptoms — none (all non-none options DQ)
+    await pickOption(page, 'q4', 'none');
+    await next(page);
+
+    // Step 5: side effects = nausea → routes to step 6 severity
+    await pickOption(page, 'q5', 'nausea');
+    await next(page);
+
+    // Step 6: severity = moderate + explanation
+    await pickOption(page, 'q6', 'moderate');
+    await page.locator('#q6a-detail').fill('Nausea lasting 4–6 hours post-injection.');
+    await next(page);
+
+    await pickOption(page, 'q7', 'energy');
+    await pickOption(page, 'q7', 'sleep');
+    await next(page);
+
+    await page.locator('#weight').fill('175');
+    await next(page);
+
+    await pickOption(page, 'q9', '4'); await next(page);
+    await pickOption(page, 'q10', '6-10'); await next(page);
+    await pickOption(page, 'q11', 'normal'); await next(page);
+    await pickOption(page, 'q12', 'normal'); await next(page);
+
+    // Step 13: dose preference = increase + reason
+    await pickOption(page, 'q13', 'increase');
+    await page.locator('#q13a-detail').fill('Weight loss has plateaued at current dose.');
+    await next(page);
+
+    await pickOption(page, 'q14', 'yes');
+    await next(page);
+
+    await page.locator('#shipping-street').fill('789 Elm St');
+    await page.locator('#shipping-street2').fill('Apt 4B');
+    await page.locator('#shipping-city').fill('Houston');
+    await page.locator('#shipping-state').fill('TX');
+    await page.locator('#shipping-zip').fill('77001');
+    await page.locator('#shipping-country').fill('United States');
+    await next(page);
+
+    await page.locator('#q15-detail').fill('Patient has been fully compliant with medication schedule.');
+    await page.locator('.step.active .btn-primary').click();
+
+    await expect(page.locator('#page-success')).toBeVisible();
+
+    const payload = page.locator('#payload-success');
+
+    // Core identity fields
+    await expect(payload).toContainText('"client_name"');
+    await expect(payload).toContainText('"patient_id"');
+    await expect(payload).toContainText('"patient_email"');
+    await expect(payload).toContainText('"gender"');
+
+    // Step 1 — history + exclusions
+    await expect(payload).toContainText('"q0_have_there_been_any_changes_to_medical_social_or_surgical_history"');
+    await expect(payload).toContainText('"q1_do_any_of_the_following_apply_to_you_exclusions"');
+    await expect(payload).toContainText('"q2_female_only_exclusions"');
+    await expect(payload).toContainText('"q3_interval_history_change_explanation"');
+    await expect(payload).toContainText('"q4_conditions_requiring_clearance"');
+    await expect(payload).toContainText('"q4_opiate_medication_details"');
+    await expect(payload).toContainText('"q5_have_you_had_bariatric_surgery"');
+    await expect(payload).toContainText('"q5_bariatric_surgery_details"');
+    await expect(payload).toContainText('"q6_other_medical_conditions"');
+
+    // Steps 2–3 — allergies + medications
+    await expect(payload).toContainText('"q18_have_there_been_any_changes_to_your_allergies"');
+    await expect(payload).toContainText('"q18_current_medication_allergies"');
+    await expect(payload).toContainText('"q7_have_there_been_any_changes_to_your_medications"');
+    await expect(payload).toContainText('"q7_current_daily_medications"');
+
+    // Steps 4–6 — symptoms + severity
+    await expect(payload).toContainText('"q8_serious_symptoms_since_starting_medication"');
+    await expect(payload).toContainText('"q9_other_side_effects_since_starting_medication"');
+    await expect(payload).toContainText('"q8_symptom_severity"');
+    await expect(payload).toContainText('"q8_moderate_or_severe_symptom_explanation"');
+
+    // Steps 7–15
+    await expect(payload).toContainText('"q10_benefits_or_improvements_since_starting_medication"');
+    await expect(payload).toContainText('"q11_current_weight_lbs"');
+    await expect(payload).toContainText('"q12_injections_or_weeks_completed_at_current_dose"');
+    await expect(payload).toContainText('"q13_when_was_your_last_dose"');
+    await expect(payload).toContainText('"q14_current_or_average_blood_pressure_range"');
+    await expect(payload).toContainText('"q15_current_or_average_heart_rate_range"');
+    await expect(payload).toContainText('"q16_dose_preference"');
+    await expect(payload).toContainText('"q16_dose_preference_reason"');
+    await expect(payload).toContainText('"q17_do_you_need_a_refill_on_ondansetron"');
+    await expect(payload).toContainText('"q19_further_information_for_doctor"');
+    await expect(payload).toContainText('"shipping_address_line_1"');
+    await expect(payload).toContainText('"shipping_address_line_2"');
+    await expect(payload).toContainText('"shipping_city"');
   });
 });

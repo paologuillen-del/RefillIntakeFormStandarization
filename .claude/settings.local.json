@@ -5,7 +5,16 @@
       "Bash(npx playwright *)",
       "Bash(npm init *)",
       "Bash(npm install *)",
-      "WebFetch(domain:forms.zohopublic.com)"
+      "WebFetch(domain:forms.zohopublic.com)",
+      "Bash(git count-objects *)",
+      "Bash(xargs -I{} git cat-file -s HEAD:{})",
+      "Bash(grep -E '\\\\.\\(webm|png\\)$')",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(chmod +x *)",
+      "Bash(wait)"
     ]
   }
 }
