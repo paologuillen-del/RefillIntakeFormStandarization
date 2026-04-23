@@ -1338,12 +1338,13 @@ function buildSelectedLabels(group) {
 function buildPayload() {
   const p = {};
 
-  // Metadata injected by the calling system via URL query string
+  p.formReferenceId = 1975413;
+
+  // Optional metadata injected via URL query string
   const _q = new URLSearchParams(window.location.search);
-  if (_q.get('formReferenceId')) p.formReferenceId = isNaN(+_q.get('formReferenceId')) ? _q.get('formReferenceId') : +_q.get('formReferenceId');
-  if (_q.get('modality'))        p.modality        = _q.get('modality');
-  if (_q.get('service_type'))    p.service_type    = _q.get('service_type');
-  if (_q.get('care_coaching'))   p.care_coaching   = _q.get('care_coaching') === 'true';
+  if (_q.get('modality'))      p.modality      = _q.get('modality');
+  if (_q.get('service_type'))  p.service_type  = _q.get('service_type');
+  if (_q.get('care_coaching')) p.care_coaching = _q.get('care_coaching') === 'true';
 
   p.client_name   = document.getElementById('client-name-hidden').value || '';
   p.patient_id    = document.getElementById('patient-id').value.trim();
