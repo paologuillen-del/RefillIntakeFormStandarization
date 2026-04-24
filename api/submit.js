@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
   const payload    = req.body;
   const patientId  = (payload.patient_id || '').trim();
   const found      = await checkPatientExists(patientId);
-  const createTicket = !found; // true when patient not found or no ID
+  const createTicket = found; // true when patient exists and ticket should be created
 
   const zohoPayload = { ...payload, createTicket };
 
