@@ -1338,12 +1338,13 @@ function buildSelectedLabels(group) {
 function buildPayload() {
   const p = {};
 
-  p.formReferenceId = 1975413;
+  // ── Identity ─────────────────────────────────────────────────
+  p.patient_id = document.getElementById('patient-id').value.trim();
 
-  // Optional metadata injected via URL query string
-  const _q = new URLSearchParams(window.location.search);
-  if (_q.get('service_type'))  p.service_type  = _q.get('service_type');
-  if (_q.get('care_coaching')) p.care_coaching = _q.get('care_coaching') === 'true';
+  const genderVal = getRadio('gender'); // used for q2 female section, not sent in payload
+
+  // ── Fixed metadata ───────────────────────────────────────────
+  p.formReferenceId = 1975413;
 
   // sync_visit if hospitalization reported OR symptoms classified as severe; otherwise async_visit
   const _sideEffectsSel = getSelected('q5');
@@ -1352,24 +1353,26 @@ function buildPayload() {
     ? 'sync_visit'
     : 'async_visit';
 
-  p.client_name   = document.getElementById('client-name-hidden').value || '';
-  p.patient_id    = document.getElementById('patient-id').value.trim();
-  p.patient_email = document.getElementById('patient-email').value.trim();
+  p.service_type  = 'macro_mwl';
+  p.care_coaching = true;
 
-  const genderVal = getRadio('gender');
-  const genderLabels = { male: 'Male', female: 'Female', other: 'Prefer not to say' };
-  p.gender = genderLabels[genderVal] || '';
+  // ── Shipping ─────────────────────────────────────────────────
+  p.shipping_address_line_1 = document.getElementById('shipping-street').value.trim();
+  const _line2 = document.getElementById('shipping-street2').value.trim();
+  if (_line2) p.shipping_address_line_2 = _line2;
+  p.shipping_city    = document.getElementById('shipping-city').value.trim();
+  p.shipping_state   = document.getElementById('shipping-state').value.trim();
+  p.shipping_zip     = document.getElementById('shipping-zip').value.trim();
+  p.shipping_country = document.getElementById('shipping-country').value.trim();
 
+  // ── q0 — medical history ─────────────────────────────────────
   const isFemaleOrOther = genderVal === 'female' || genderVal === 'other';
-
-  // q0
   const q0val = getRadio('q1');
   p.q0_have_there_been_any_changes_to_medical_social_or_surgical_history =
     q0val === 'yes' ? 'Yes' : q0val === 'no' ? 'No' : '';
 
   if (q0val === 'yes') {
     p.q1_do_any_of_the_following_apply_to_you_exclusions = buildCheckboxPairs('q1-excl');
-    // q2 only included for female / prefer-not-to-say patients
     if (isFemaleOrOther) p.q2_female_only_exclusions = buildCheckboxPairs('q1-female');
 
     const exclSel = getSelected('q1-excl');
@@ -1393,7 +1396,7 @@ function buildPayload() {
     p.q6_other_medical_conditions = buildSelectedLabels('q1-cond');
   }
 
-  // q7 — medication changes
+  // ── q7 — medication changes ──────────────────────────────────
   const q7val = getRadio('q3');
   p.q7_have_there_been_any_changes_to_your_medications = q7val === 'yes' ? 'Yes' : q7val === 'no' ? 'No' : '';
   if (q7val === 'yes') {
@@ -1401,7 +1404,7 @@ function buildPayload() {
     if (txt) p.q7_current_daily_medications = txt;
   }
 
-  // q8 — serious symptoms + severity
+  // ── q8 — serious symptoms + severity ─────────────────────────
   p.q8_serious_symptoms_since_starting_medication = buildSelectedLabels('q4');
   const sevVal = getRadio('q6');
   if (sevVal) {
@@ -1412,33 +1415,33 @@ function buildPayload() {
     }
   }
 
-  // q9 — side effects
+  // ── q9 — side effects ────────────────────────────────────────
   p.q9_other_side_effects_since_starting_medication = buildSelectedLabels('q5');
 
-  // q10 — benefits
+  // ── q10 — benefits ───────────────────────────────────────────
   p.q10_benefits_or_improvements_since_starting_medication = buildSelectedLabels('q7');
 
-  // q11 — weight
+  // ── q11 — weight ─────────────────────────────────────────────
   const wt = document.getElementById('weight').value;
   if (wt) p.q11_current_weight_lbs = wt;
 
-  // q12 — injections
+  // ── q12 — injections ─────────────────────────────────────────
   const q9el = document.querySelector('.opt-item.radio[data-group="q9"].selected');
   if (q9el) p.q12_injections_or_weeks_completed_at_current_dose = q9el.dataset.value;
 
-  // q13 — last dose
+  // ── q13 — last dose ──────────────────────────────────────────
   const q10el = document.querySelector('.opt-item.radio[data-group="q10"].selected');
   if (q10el) p.q13_when_was_your_last_dose = getOptionLabel(q10el);
 
-  // q14 — blood pressure
+  // ── q14 — blood pressure ─────────────────────────────────────
   const q11el = document.querySelector('.opt-item.radio[data-group="q11"].selected');
   if (q11el) p.q14_current_or_average_blood_pressure_range = getOptionLabel(q11el);
 
-  // q15 — heart rate
+  // ── q15 — heart rate ─────────────────────────────────────────
   const q12el = document.querySelector('.opt-item.radio[data-group="q12"].selected');
   if (q12el) p.q15_current_or_average_heart_rate_range = getOptionLabel(q12el);
 
-  // q16 — dose preference
+  // ── q16 — dose preference ────────────────────────────────────
   const q13val = getRadio('q13');
   const q13el  = document.querySelector('.opt-item.radio[data-group="q13"].selected');
   if (q13el) {
@@ -1449,30 +1452,13 @@ function buildPayload() {
     }
   }
 
-  // q17 — ondansetron
+  // ── q17 — ondansetron ────────────────────────────────────────
   const q14val = getRadio('q14');
   if (q14val) p.q17_do_you_need_a_refill_on_ondansetron = q14val === 'yes' ? 'Yes' : 'No';
 
-  // q18 — allergy changes
-  const q18val = getRadio('q2');
-  p.q18_have_there_been_any_changes_to_your_allergies = q18val === 'yes' ? 'Yes' : q18val === 'no' ? 'No' : '';
-  if (q18val === 'yes') {
-    const txt = document.getElementById('allergy-list').value.trim();
-    if (txt) p.q18_current_medication_allergies = txt;
-  }
-
-  // q19 — further info
+  // ── q19 — further info ───────────────────────────────────────
   const q19txt = document.getElementById('q15-detail').value.trim();
   if (q19txt) p.q19_further_information_for_doctor = q19txt;
-
-  // shipping address — flat fields
-  p.shipping_address_line_1 = document.getElementById('shipping-street').value.trim();
-  const _line2 = document.getElementById('shipping-street2').value.trim();
-  if (_line2) p.shipping_address_line_2 = _line2;
-  p.shipping_city    = document.getElementById('shipping-city').value.trim();
-  p.shipping_state   = document.getElementById('shipping-state').value.trim();
-  p.shipping_zip     = document.getElementById('shipping-zip').value.trim();
-  p.shipping_country = document.getElementById('shipping-country').value.trim();
 
   return p;
 }
