@@ -1342,9 +1342,15 @@ function buildPayload() {
 
   // Optional metadata injected via URL query string
   const _q = new URLSearchParams(window.location.search);
-  if (_q.get('modality'))      p.modality      = _q.get('modality');
   if (_q.get('service_type'))  p.service_type  = _q.get('service_type');
   if (_q.get('care_coaching')) p.care_coaching = _q.get('care_coaching') === 'true';
+
+  // sync_visit if hospitalization reported OR symptoms classified as severe; otherwise async_visit
+  const _sideEffectsSel = getSelected('q5');
+  const _symptomSeverity = getRadio('q6');
+  p.modality = (_sideEffectsSel.includes('hospitalization') || _symptomSeverity === 'severe')
+    ? 'sync_visit'
+    : 'async_visit';
 
   p.client_name   = document.getElementById('client-name-hidden').value || '';
   p.patient_id    = document.getElementById('patient-id').value.trim();

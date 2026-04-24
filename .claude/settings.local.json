@@ -14,7 +14,8 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(chmod +x *)",
-      "Bash(wait)"
+      "Bash(wait)",
+      "Bash(grep -E \"\\\\.\\(md|txt|json|yaml|yml\\)$\")"
     ]
   }
 }
